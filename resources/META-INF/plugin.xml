@@ -1,0 +1,39 @@
+<idea-plugin>
+  <id>com.github.old-town.phpstorm.smartdtobuilder</id>
+  <name>Smart DTO Builder</name>
+  <version>1.0</version>
+  <vendor email="and-rey2@yandex.ru" url="https://github.com/old-town/smart-dto-builder">OldTown</vendor>
+
+  <description><![CDATA[
+      Smart DTO Builder. Smart creation of DTO
+    ]]></description>
+
+
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <idea-version since-build="173.0"/>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <depends>com.jetbrains.php</depends>
+  <depends>com.intellij.modules.lang</depends>
+  <depends>com.intellij.modules.platform</depends>
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+  </extensions>
+
+  <actions>
+
+  </actions>
+
+  <project-components>
+    <component>
+      <implementation-class>com.github.oldtown.phpstorm.smartdtobuilder.component.SmartDtoBuilderProjectComponent</implementation-class>
+    </component>
+  </project-components>
+
+</idea-plugin>
