@@ -1,5 +1,7 @@
 package com.github.oldtown.phpstorm.smartdtobuilder.intentions.generators;
 
+import com.github.oldtown.phpstorm.smartdtobuilder.component.Config;
+import com.github.oldtown.phpstorm.smartdtobuilder.component.SmartDtoBuilderProjectComponent;
 import com.intellij.ide.fileTemplates.FileTemplate;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.openapi.project.Project;
@@ -24,39 +26,82 @@ public class DtoBuilderGenerator {
     private final PhpClass myTargetClass;
     @NotNull
     private final Field myField;
+    final private Config config;
 
     public DtoBuilderGenerator(@NotNull PhpClass myTargetClass, @NotNull Field myField) {
         this.myTargetClass = myTargetClass;
         this.myField = myField;
+        config = Objects.requireNonNull(myField.getProject().getComponent(SmartDtoBuilderProjectComponent.class)).getConfig();
     }
 
     @NotNull
     public Method[] findGetters() {
-        return this.findFieldAccessMethods("PHP Getter Method");
+        return this.findFieldAccessMethods(config.getGetterTemplateName());
     }
 
     @NotNull
     public Method[] findSetters() {
-        return this.findFieldAccessMethods("PHP Setter Method");
+        return this.findFieldAccessMethods(config.getSetterTemplateName());
     }
+    @NotNull
+    public Method[] findHasMethods() {
+        return this.findFieldAccessMethods(config.getHasTemplateName());
+    }
+
 
 
     @NotNull
     private Method[] findFieldAccessMethods(String templateName) {
         List<Method> accessMethods = new ArrayList<>();
+        boolean isStatic = this.myField.getModifier().isStatic();
+
         String[] expectedNames = this.getPossibleAccessorMethodNames(templateName);
+        Method[] methods = myTargetClass.getOwnMethods();
+
+        for(Method method : methods) {
+            if (!method.getAccess().isPrivate() && method.getModifier().isStatic() == isStatic) {
+                String methodName = method.getName();
+
+                for (String expectedName: expectedNames) {
+                    if (namesEqual(methodName, expectedName)) {
+                        accessMethods.add(method);
+                        break;
+                    }
+                }
+            }
+        }
 
         return accessMethods.toArray(Method.EMPTY);
+    }
+
+    private static boolean namesEqual(@NotNull String original, @NotNull String expected) {
+        String adjustedOriginal = original.indexOf(95) >= 0 ? original.replace("_", "") : original;
+        String adjustedExpected = expected.indexOf(95) >= 0 ? expected.replace("_", "") : expected;
+        return adjustedOriginal.equalsIgnoreCase(adjustedExpected);
     }
 
 
     @NotNull
     private String[] getPossibleAccessorMethodNames(@NotNull String templateName) {
         Set<String> allNames = new HashSet<>();
-        String prefix = "PHP Getter Method".equals(templateName) ? "get" : "set";
-        allNames.add((prefix + this.myField.getName()).toUpperCase());
-        FileTemplate currTemplate = FileTemplateManager.getInstance(this.myField.getProject()).getCodeTemplate(templateName);
-        this.collectMethodNamesFromTemplate(currTemplate.getText(), 0, this.myField, allNames, templateName);
+        String prefix = null;
+        if (templateName.equals(config.getGetterTemplateName())) {
+            prefix ="get";
+        }
+        if (templateName.equals(config.getSetterTemplateName())) {
+            prefix ="set";
+        }
+        if (templateName.equals(config.getHasTemplateName())) {
+            prefix ="has";
+        }
+        FileTemplateManager fileTemplateManager = FileTemplateManager.getInstance(this.myField.getProject());
+        if (null != prefix) {
+            allNames.add((prefix + this.myField.getName()).toUpperCase());
+            FileTemplate currTemplate = fileTemplateManager.getCodeTemplate(templateName);
+            this.collectMethodNamesFromTemplate(currTemplate.getText(), 0, this.myField, allNames, templateName);
+
+
+        }
 
         return ArrayUtil.toStringArray(allNames);
     }

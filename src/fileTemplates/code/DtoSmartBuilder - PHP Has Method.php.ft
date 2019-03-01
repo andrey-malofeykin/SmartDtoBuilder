@@ -1,0 +1,11 @@
+/**
+ * @return boolean
+ */
+public ${STATIC} function has${NAME}()#if(${RETURN_TYPE}): ${RETURN_TYPE}#else#end
+{
+#if (${STATIC} == "static")
+    return null !== self::$${FIELD_NAME};
+#else
+    return  !== $this->${FIELD_NAME};
+#end
+}

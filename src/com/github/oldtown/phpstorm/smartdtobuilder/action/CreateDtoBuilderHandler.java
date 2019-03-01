@@ -37,6 +37,8 @@ class CreateDtoBuilderHandler implements LanguageCodeInsightActionHandler {
 
         if (targetClass != null) {
             PhpNamedElementNode[] fieldsToShow = this.collectFields(targetClass);
+
+            return;
         }
 
         createDialog(project).show();
@@ -59,7 +61,7 @@ class CreateDtoBuilderHandler implements LanguageCodeInsightActionHandler {
 
     private boolean isSelectable(PhpClass phpClass, Field field) {
         DtoBuilderGenerator generator = new DtoBuilderGenerator(phpClass, field);
-        return generator.findGetters().length == 0 && generator.findSetters().length == 0;
+        return generator.findGetters().length == 0 && generator.findSetters().length == 0 && generator.findHasMethods().length == 0;
     }
 
     private CreateDtoBuilderDialog createDialog(Project project) {
